@@ -159,7 +159,7 @@ class ArticleHandler(BaseHandler):
     def get(self,id):
         one = self.application.db.get('select * from article where id = %s',id)
         if not one: raise tornado.web.HTTPError(404)
-        self.render('article.html',one=one)
+        self.render('page.html',one=one)
 
 class HelloModule(tornado.web.UIModule):
     def render(self,i):
