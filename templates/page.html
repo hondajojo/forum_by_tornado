@@ -1,0 +1,9 @@
+{% extends "home.html" %}
+{% block main%}
+<div class="topic-detail container-box">
+<div class="ui-header">{{one['title']}}</div>
+<div class="ui-content">{% raw one['content'] %}</div>
+</div>
+{% end %}
+{% block sidebar %}
+{% end %}
