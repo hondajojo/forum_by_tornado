@@ -32,7 +32,7 @@ class Application(tornado.web.Application):
             (r'/logout',LogoutHandler),
             (r'/register',RegisterHandler),
             (r'/post',PostHandler),
-            (r'/(.)',ArticleHandler),
+            (r'/(\d+)',ArticleHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -151,22 +151,23 @@ class PostHandler(BaseHandler):
     def post(self):
         title = self.get_argument('title')
         content = self.get_argument('content')
-        self.application.db.insert('insert into article (title,content) values (%s,%s)',title,content)
+        author = self.current_user
+        self.application.db.insert('insert into article (title,content,author) values (%s,%s,%s)',title,content,author)
         self.redirect('/')
 
 
 class ArticleHandler(BaseHandler):
     def get(self,id):
-        one = self.application.db.get('select * from article where id = %s',id)
+        one = self.application.db.get("select * from article where id = %s",id)
         if not one: raise tornado.web.HTTPError(404)
-        self.render('page.html',one=one)
+        self.render('page.html',one = one)
 
 class HelloModule(tornado.web.UIModule):
     def render(self,i):
         return self.render_string('modules/item.html',i=i)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
