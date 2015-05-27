@@ -2,6 +2,10 @@
     <div class="main">
         <h3 class="title">
             <a href="{{'/'+str(i['id'])}}">{{i['title']}}</a>
+	<div class="meta">
+	    <span class="username">•{{i['author']}}</span>
+	    <span class="last-touched">•{{i['posttime']}}</span>	
+	</div>
         </h3>
     </div>
 </div>
