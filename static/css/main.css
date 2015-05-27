@@ -1,7 +1,20 @@
 @charset "UTF-8";
 /*文字排版*/
+.ui-contents {
+	margin-top: 0px;
+	margin-right: 600px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+}
 .topics-item .main .title a {
     color: #555;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 12px;
+}
+.meta {
+	font-size: 12px;
+	color: #A5A5A5;
 }
 .main {
     padding-left: 45px;
