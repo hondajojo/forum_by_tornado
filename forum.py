@@ -40,7 +40,7 @@ class Application(tornado.web.Application):
             debug = True,
             cookie_secret = 'bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=',
             login_url = '/login',
-            ui_modules = {'Hello':HelloModule},
+            ui_modules = {'Hello':HelloModule,'Reply':ReplyModule},
         )
         tornado.web.Application.__init__(self,handlers,**settings)
         self.db = torndb.Connection(
@@ -136,7 +136,7 @@ class RegisterHandler(BaseHandler):
 
 class HomeHandler(BaseHandler):
     def get(self):
-        all = self.application.db.query('select * from article')
+        all = self.application.db.query('select * from article order by posttime desc')
         if not all:
             self.redirect('/post')
             return
@@ -160,11 +160,24 @@ class ArticleHandler(BaseHandler):
     def get(self,id):
         one = self.application.db.get("select * from article where id = %s",id)
         if not one: raise tornado.web.HTTPError(404)
-        self.render('page.html',one = one)
+        comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
+        self.render('page.html',one = one,comments=comments)  
+        #return id
+
+    def post(self,id):
+        comment = self.get_argument('comment')
+        reply_user = self.current_user
+        # sql = 'insert into comment (id,reply_user,comment) values(%s,%s,%s)' %(id,reply_user,comment)
+        self.application.db.insert('insert into comment (id,reply_user,comment) values(%s,%s,%s)',id,reply_user,comment)
+        self.redirect('/%s'%id)
 
 class HelloModule(tornado.web.UIModule):
     def render(self,i):
         return self.render_string('modules/item.html',i=i)
+
+class ReplyModule(tornado.web.UIModule):
+    def render(self,i):
+        return self.render_string('modules/reply-item.html',i=i)
 
 
 if __name__ == "__main__":  
