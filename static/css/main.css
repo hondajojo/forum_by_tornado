@@ -1,5 +1,16 @@
 @charset "UTF-8";
 /*文字排版*/
+.containers-box {
+  -webkit-border-radius: first-value-of(5px) first-value-of(5px);
+  -moz-border-radius: 5px / 5px;
+  border-radius: 5px / 5px;
+  background: #fff;
+  list-style-position: inside;
+  padding: 10px;
+  -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(150, 150, 150, 0.6);}
 .ui-contents {
 	margin-top: 0px;
 	margin-right: 600px;
@@ -1119,7 +1130,7 @@ a.btn {
   -moz-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(150, 150, 150, 0.6);
-  text-align: center; }
+  text-align : center;}
   .container-box .ui-header .title {
     display: block;
     border-bottom: 1px solid #eee;
