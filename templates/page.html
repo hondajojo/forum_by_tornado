@@ -30,8 +30,12 @@
 </div>
 </div>
 {% else %}
+
 <div class="topic-reply-create containers-box mt10">
 <div class="ui-header">
+{% if mistake %}
+<span style="color:red">{{mistake}}</span></br>
+{% end %}
 <span class="title">创建新的回复</span>
 </div>
 <div class="ui-content">
