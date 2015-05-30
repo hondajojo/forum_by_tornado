@@ -161,15 +161,22 @@ class ArticleHandler(BaseHandler):
         one = self.application.db.get("select * from article where id = %s",id)
         if not one: raise tornado.web.HTTPError(404)
         comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
-        self.render('page.html',one = one,comments=comments)  
+	mistake = None
+        self.render('page.html',one = one,comments=comments,mistake = mistake)  
         #return id
 
     def post(self,id):
         comment = self.get_argument('comment')
         reply_user = self.current_user
+        if (not comment): 
+            one = self.application.db.get('select * from article where id =%s',id)
+            comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
+            self.render('page.html',one = one,comments = comments ,mistake = u'回复内容不能为空')
+        # reply_user = self.current_user
         # sql = 'insert into comment (id,reply_user,comment) values(%s,%s,%s)' %(id,reply_user,comment)
-        self.application.db.insert('insert into comment (id,reply_user,comment) values(%s,%s,%s)',id,reply_user,comment)
-        self.redirect('/%s'%id)
+        else :
+            self.application.db.insert('insert into comment (id,reply_user,comment) values(%s,%s,%s)',id,reply_user,comment)
+            self.redirect('/%s'%id)
 
 class HelloModule(tornado.web.UIModule):
     def render(self,i):
