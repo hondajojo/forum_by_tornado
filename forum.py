@@ -13,6 +13,9 @@ import concurrent.futures
 from tornado import gen
 import tornado.escape
 #import markdown
+import json
+import tornado.gen
+import tornado.httpclient
 
 define("port",default=8003,help='run on the given port',type=int)
 define('mysql_host',default='127.0.0.1:3306',help='db host')
@@ -33,6 +36,7 @@ class Application(tornado.web.Application):
             (r'/register',RegisterHandler),
             (r'/post',PostHandler),
             (r'/(\d+)',ArticleHandler),
+	    (r'/rss',V2exHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -162,13 +166,13 @@ class ArticleHandler(BaseHandler):
         if not one: raise tornado.web.HTTPError(404)
         comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
 	mistake = None
-        self.render('page.html',one = one,comments=comments,mistake = mistake)  
+        self.render('page.html',one = one,comments=comments,mistake = mistake)
         #return id
 
     def post(self,id):
         comment = self.get_argument('comment')
         reply_user = self.current_user
-        if (not comment): 
+        if (not comment):
             one = self.application.db.get('select * from article where id =%s',id)
             comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
             self.render('page.html',one = one,comments = comments ,mistake = u'回复内容不能为空')
@@ -186,8 +190,25 @@ class ReplyModule(tornado.web.UIModule):
     def render(self,i):
         return self.render_string('modules/reply-item.html',i=i)
 
+class V2exHandler(BaseHandler):
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
+    def get(self):
+        client = tornado.httpclient.AsyncHTTPClient()
+        response = yield client.fetch('https://www.v2ex.com/api/topics/hot.json')
+        if response.code == 200:
+            items = json.loads(response.body.decode('utf-8'))
+            title = u'V2EX'
+            description = u'V2EX 是创意工作者们的社区。这里目前汇聚了超过 110,000 名主要来自互联网行业、游戏行业和媒体行业的创意工作者。V2EX 希望能够成为创意工作者们的生活和事业的一部分。'
+            #pubdate = items[0]['created']
+            #link = 'http://daily.zhihu.com/'
+            self.set_header("Content-Type", "application/rss+xml; charset=UTF-8")
+            self.render("rss.xml", title=title, description=description, items=items)
+        else:
+            raise tornado.web.HTTPError(response.code)
 
-if __name__ == "__main__":  
+
+if __name__ == "__main__":
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)

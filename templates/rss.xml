@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>{{ title }}</title>
+   
+    <description>{{ description }}</description>
+    <language>zh-cn</language>
+    
+    {% for item in items %}
+    <item>
+      <title><![CDATA[{{ item['title'] }}]]></title>
+      <link>{{ item['url'] }}</link>
+      <author>{{ item['member']['username']}}</author>
+      <description><![CDATA[{{ item['content_rendered'] }}]]></description>
+      <pubDate>{{ item['created'] }}</pubDate>
+      <guid>{{ item['id'] }}</guid>
+    </item>
+    {% end %}
+  </channel>
+</rss>

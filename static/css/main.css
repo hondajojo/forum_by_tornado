@@ -1,5 +1,13 @@
 @charset "UTF-8";
 /*文字排版*/
+.counts {
+    border-radius: 8px;
+    position: absolute;
+    right: 10px;
+    top: 40%;
+    background: #BBB none repeat scroll 0% 0%;
+    font-size: 13px;
+}
 .containers-box {
   -webkit-border-radius: first-value-of(5px) first-value-of(5px);
   -moz-border-radius: 5px / 5px;
