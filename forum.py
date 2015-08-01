@@ -36,7 +36,9 @@ class Application(tornado.web.Application):
             (r'/register',RegisterHandler),
             (r'/post',PostHandler),
             (r'/(\d+)',ArticleHandler),
-	    (r'/rss',V2exHandler),
+	        (r'/rss',V2exHandler),
+            (r'/test',AjaxHandler),
+            (r'/ajax',ForHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -207,6 +209,13 @@ class V2exHandler(BaseHandler):
         else:
             raise tornado.web.HTTPError(response.code)
 
+class ForHandler(BaseHandler):
+    def get(self):
+        self.render('ajax.html')
+
+class AjaxHandler(BaseHandler):
+    def post(self):
+        self.write(self.get_argument('message'))
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
