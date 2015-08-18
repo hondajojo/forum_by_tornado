@@ -1,0 +1,24 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>qjb</title>
+<body>
+<form method="post">
+{% if error %}
+<div style="color:#FF0000">{{ error }}</div>
+{% end %}
+inout your site:
+<input type="text" name="site" />
+<input type="submit" value="提交" /></br>
+{% if b %}
+<!-- <p>{{b}}</p> -->
+{% for x,y in b.items() %}
+<a href="http://feedly.com/i/subscription/feed/{{ x }}" target="_blank">{{ x }}</a>
+<a>{{ y }}</a></br>
+{% end %}
+{% end %}
+</form>
+</body>
+</html>

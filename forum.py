@@ -16,6 +16,7 @@ import tornado.escape
 import json
 import tornado.gen
 import tornado.httpclient
+import urllib
 
 define("port",default=8003,help='run on the given port',type=int)
 define('mysql_host',default='127.0.0.1:3306',help='db host')
@@ -39,6 +40,7 @@ class Application(tornado.web.Application):
 	        (r'/rss',V2exHandler),
             (r'/test',AjaxHandler),
             (r'/ajax',ForHandler),
+            (r'/feedly',FeedlyHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -217,6 +219,29 @@ class AjaxHandler(BaseHandler):
     def post(self):
         self.write(self.get_argument('message'))
 
+class FeedlyHandler(BaseHandler):
+    def get(self):
+        self.render('feedly.html',b=None,error=None)
+
+    @tornado.gen.coroutine
+    def post(self):
+        site = self.get_argument('site')
+        if site:
+            quote_site = urllib.quote_plus(site)
+            long_url = 'https://feedly.com//v3/search/auto-complete?cv=28.0.982&ck=1437809329022&locale=en-US&query=' + quote_site + '&sites=6&topics=0&libraries=0'
+            client = tornado.httpclient.AsyncHTTPClient()
+            response = yield client.fetch(long_url)
+            content = response.body.decode('utf-8')
+            items =  json.loads(content)
+            a = items.get('sites')
+            b = {}
+            for i in a:
+                rss_url = i.get('feedId').split('feed/',1)[-1]
+                subscribers = i.get('subscribers')
+                b[rss_url] = subscribers if subscribers else 0
+            self.render('feedly.html',b=b,error=None)
+        else:
+            self.render('feedly.html',b=None,error='Nooooooooooo!')
 if __name__ == "__main__":
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
