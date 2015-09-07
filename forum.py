@@ -41,6 +41,8 @@ class Application(tornado.web.Application):
             (r'/test',AjaxHandler),
             (r'/ajax',ForHandler),
             (r'/feedly',FeedlyHandler),
+            (r'/upload',UploadHandler),
+            (r'/day',DailyHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -242,6 +244,49 @@ class FeedlyHandler(BaseHandler):
             self.render('feedly.html',b=b,error=None)
         else:
             self.render('feedly.html',b=None,error='Nooooooooooo!')
+
+class UploadHandler(BaseHandler):
+    def get(self):
+        self.render('upload_file.html')
+
+    def post(self):
+        if self.request.files:
+            myfile = self.request.files['myfile'][0]
+            print myfile
+            filename = myfile['filename']
+            path = '/home/mako/0619/'+filename
+            print path
+            fin = open(path,'w')
+            print 'success'
+            fin.write(myfile['body'])
+            fin.close()
+
+class DailyHandler(BaseHandler):
+    def get(self):
+        sql_day_all = "select * from helishi"
+        count = len(self.application.db.query(sql_day_all))
+        offset = int(self.get_argument('offset',0))
+        #limit = self.get_argument('limit',15)
+        sql_day = "select * from helishi limit %d,15" % offset
+
+        if offset == 0:
+            if count > 15:
+                before = None
+                after = 15
+            else:
+                before =None
+                after = None
+        else:
+            if (count - 15) / 15.0 > 1:
+                before = offset - 15
+                after = offset + 15
+            if 0 < (count - 15) / 15.0 < 1:
+                before = offset - 15
+                after = None
+
+        news_list = self.application.db.query(sql_day)
+        self.render('day.html',news_list=news_list,after=after,before=before)
+
 if __name__ == "__main__":
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
