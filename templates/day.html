@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>知乎日报 - 满足你的好奇心</title>
+{% end %}
+
+{% block css %}
+<link rel="stylesheet" href="../static/css/day.css">
+{% end %}
+
+{% block content %}
+
+<!-- features start -->
+<div class="row features">
+    {% for news in news_list %}
+    <div class="col-md-4">
+        <div class="feature">
+            <div class="mask"></div>
+            <img src="{{ escape(news['image_public_url']) }}" >
+            
+
+        </div>
+    </div>
+    {% end %}
+</div>
+<!-- feature end -->
+
+<div style="margin-top: 40px;" class="row"></div>
+
+<!-- next start -->
+<div class="row next">
+    {% if after != None %}
+    <a target="_self" href="/day?offset={{after}}" class="page-btn">下一页</a>
+    {% end %}
+    {% if before != None %}
+    <a target="_self" href="/day?offset={{before}}" class="page-btn">上一页</a>
+    {% end %}
+</div>
+
+
+{% end %}
