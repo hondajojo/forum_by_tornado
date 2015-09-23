@@ -17,6 +17,8 @@ import json
 import tornado.gen
 import tornado.httpclient
 import urllib
+from datetime import datetime
+from pyquery import PyQuery as pq
 
 define("port",default=8003,help='run on the given port',type=int)
 define('mysql_host',default='127.0.0.1:3306',help='db host')
@@ -43,6 +45,7 @@ class Application(tornado.web.Application):
             (r'/feedly',FeedlyHandler),
             (r'/upload',UploadHandler),
             (r'/day',DailyHandler),
+            (r'/bgm',BangumiHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -162,7 +165,9 @@ class PostHandler(BaseHandler):
         title = self.get_argument('title')
         content = self.get_argument('content')
         author = self.current_user
-        self.application.db.insert('insert into article (title,content,author) values (%s,%s,%s)',title,content,author)
+        posttime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # print posttime
+        self.application.db.insert('insert into article (title,content,author,posttime) values (%s,%s,%s,%s)',title,content,author,posttime)
         self.redirect('/')
 
 
@@ -171,7 +176,7 @@ class ArticleHandler(BaseHandler):
         one = self.application.db.get("select * from article where id = %s",id)
         if not one: raise tornado.web.HTTPError(404)
         comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
-	mistake = None
+        mistake = None
         self.render('page.html',one = one,comments=comments,mistake = mistake)
         #return id
 
@@ -182,10 +187,12 @@ class ArticleHandler(BaseHandler):
             one = self.application.db.get('select * from article where id =%s',id)
             comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
             self.render('page.html',one = one,comments = comments ,mistake = u'回复内容不能为空')
+            # self.redirect('/%s' %id)
         # reply_user = self.current_user
         # sql = 'insert into comment (id,reply_user,comment) values(%s,%s,%s)' %(id,reply_user,comment)
         else :
-            self.application.db.insert('insert into comment (id,reply_user,comment) values(%s,%s,%s)',id,reply_user,comment)
+            reply_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.application.db.insert('insert into comment (id,reply_user,comment,reply_time) values(%s,%s,%s,%s)',id,reply_user,comment,reply_time)
             self.redirect('/%s'%id)
 
 class HelloModule(tornado.web.UIModule):
@@ -197,7 +204,7 @@ class ReplyModule(tornado.web.UIModule):
         return self.render_string('modules/reply-item.html',i=i)
 
 class V2exHandler(BaseHandler):
-    @tornado.web.asynchronous
+    # @tornado.web.asynchronous
     @tornado.gen.coroutine
     def get(self):
         client = tornado.httpclient.AsyncHTTPClient()
@@ -213,6 +220,36 @@ class V2exHandler(BaseHandler):
         else:
             raise tornado.web.HTTPError(response.code)
 
+class BangumiHandler(BaseHandler):
+    @tornado.gen.coroutine
+    def get(self):
+        client = tornado.httpclient.AsyncHTTPClient()
+        response = yield client.fetch('http://bgm.tv/group/a/forum')
+        if response.code == 200:
+            body = response.body.decode('utf-8')
+            items = []
+            for each in pq(body)('.topic').items():
+                item = {}
+                url = 'http://bgm.tv' + each('.subject > a').attr.href
+                title = each('.subject > a').attr.title
+                author = each('.author > a').text()
+                response2 = yield client.fetch(url)
+                body2 = response2.body.decode('utf-8')
+                created = pq(body2)('#columnInSubjectA > .light_odd small').text().split(' - ')[-1]
+                content = pq(body2)('.topic_content').html()
+                item['title'] = title
+                item['author'] = author
+                item['created'] = created
+                item['content'] = content
+                item['link'] = url
+                item['guid'] = url
+                items.append(item)
+        pubdate = items[0]['created']
+        link = 'http://bgm.tv/group/a/forum'
+        title = 'Bangumi'
+        self.set_header("Content-Type","application/xml")
+        self.render('rss2.xml',title=title,pubdate=pubdate,link=link,items=items,description=title)
+        # print items
 class ForHandler(BaseHandler):
     def get(self):
         self.render('ajax.html')
