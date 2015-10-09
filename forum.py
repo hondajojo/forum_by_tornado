@@ -19,6 +19,7 @@ import tornado.httpclient
 import urllib
 from datetime import datetime
 from pyquery import PyQuery as pq
+from tornado.escape import json_encode
 
 define("port",default=8003,help='run on the given port',type=int)
 define('mysql_host',default='127.0.0.1:3306',help='db host')
@@ -40,12 +41,13 @@ class Application(tornado.web.Application):
             (r'/post',PostHandler),
             (r'/(\d+)',ArticleHandler),
 	        (r'/rss',V2exHandler),
-            (r'/test',AjaxHandler),
+            # (r'/test',AjaxHandler),
             (r'/ajax',ForHandler),
             (r'/feedly',FeedlyHandler),
             (r'/upload',UploadHandler),
             (r'/day',DailyHandler),
             (r'/bgm',BangumiHandler),
+            (r'/comment',CommentHandler),
         ]
         settings = dict(
             template_path = TEMPLATE_PATH,
@@ -180,20 +182,27 @@ class ArticleHandler(BaseHandler):
         self.render('page.html',one = one,comments=comments,mistake = mistake)
         #return id
 
-    def post(self,id):
+class CommentHandler(BaseHandler):
+    def post(self):
         comment = self.get_argument('comment')
         reply_user = self.current_user
-        if (not comment):
-            one = self.application.db.get('select * from article where id =%s',id)
-            comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
-            self.render('page.html',one = one,comments = comments ,mistake = u'回复内容不能为空')
+        id = self.get_argument('id')
+        # print comment
+        print id
+        # if (not comment):
+        #     one = self.application.db.get('select * from article where id =%s',id)
+        #     comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
+        #     self.render('page.html',one = one,comments = comments ,mistake = u'回复内容不能为空')
             # self.redirect('/%s' %id)
         # reply_user = self.current_user
         # sql = 'insert into comment (id,reply_user,comment) values(%s,%s,%s)' %(id,reply_user,comment)
-        else :
-            reply_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            self.application.db.insert('insert into comment (id,reply_user,comment,reply_time) values(%s,%s,%s,%s)',id,reply_user,comment,reply_time)
-            self.redirect('/%s'%id)
+        # else :
+            # reply_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # self.application.db.insert('insert into comment (id,reply_user,comment,reply_time) values(%s,%s,%s,%s)',id,reply_user,comment,reply_time)
+            # self.redirect('/%s'%id)
+        reply_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.application.db.insert('insert into comment (id,reply_user,comment,reply_time) values(%s,%s,%s,%s)',id,reply_user,comment,reply_time)
+        self.write(json_encode({'comment':comment,'user':reply_user,'id':id,'time':reply_time}))
 
 class HelloModule(tornado.web.UIModule):
     def render(self,i):
@@ -252,11 +261,18 @@ class BangumiHandler(BaseHandler):
         # print items
 class ForHandler(BaseHandler):
     def get(self):
-        self.render('ajax.html')
+        comments = self.application.db.query('select * from ajax order by time desc')
+        self.render('ajax.html',comments=comments)
 
-class AjaxHandler(BaseHandler):
+# class AjaxHandler(BaseHandler):
     def post(self):
-        self.write(self.get_argument('message'))
+        cc = self.get_argument('vv','')
+        print cc
+        if cc:
+            time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.application.db.insert('insert into ajax (time,comment) values(%s,%s)',time,cc)
+            res = {'comment':cc,'time':time}
+        self.write(json_encode(res))
 
 class FeedlyHandler(BaseHandler):
     def get(self):

@@ -8,23 +8,27 @@
 #result{
     border: 10px;
     font-size: 50px;
-    background: #ff0fef;
+    background: white;
 }
 
 
     </style>
 </head>
 <body>
-
+    <form>
     <input type="text" id="word" > <br>
-    <button id="foo">点击</button>
-
+    <button id="foo" type="button">点击</button>
+  </form>
     <div id="result">
-
+      {% for comment in comments%}
+      <span>{{comment['comment']}}</span><span>{{comment['time']}}</span></br>
+      {% end %}
+      <!-- <li>first</li> -->
+      <!-- <li>second</li> -->
     </div>
 
 
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     $("#foo").click(function()
     {
         var word = $("#word").val(); //获取文本框的输入
@@ -36,7 +40,10 @@
         $.post("/test",{message:word}, function(data,status){
             if(status == "success")
             {
-                $("#result").html(data);
+                // $("#result").html(data);
+                // var newf = "<li>"+data+"</li>"
+                var newf = $("<li></li>").text(data);
+                $('#result').prepend(newf)
             }
             else
             {
@@ -46,6 +53,35 @@
     });
 
 
+</script> -->
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#foo').click(function(){
+      var vv = $('#word').val();
+      var pd = {'vv':vv};
+      if (vv){
+      // alert($('#word').val());
+      $.ajax({
+          type:"post",
+          url:"/ajax",
+          data:pd,
+          cache:false,
+          dataType: 'json',
+          success:function(data){
+            var newitem = "<span>"+data.comment+"</span><span>"+data.time+"</span></br>"
+            $('#result').prepend(newitem);
+            // alert(data.comment)
+          },
+          error:function(data){
+            alert('error!');
+          },
+      })
+      }
+      else{
+        alert('nothing');
+      }
+    })
+})
 </script>
 
 </body>

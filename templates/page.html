@@ -1,5 +1,41 @@
 {% extends "home.html" %}
-{% block main %} 
+{% block main %}
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#checkall").click(function(){
+		var a = $("#foo").val();
+		var str = window.location.href
+		// var num = str.indexOf("/")
+		var strs = new Array()
+		strs = str.split('/')
+		// alert(strs[3])
+		if (a){
+			$.ajax({
+          type:"post",
+          url:"/comment",
+          data:{'comment':a,'id':strs[3]},
+          cache:false,
+          dataType: 'json',
+          success:function(data){
+            // var newitem = "<span>"+data.comment+"</span><span>"+data.time+"</span></br>"
+            // $('#result').prepend(newitem);
+						var item = '<div class="reply-item"><div class="main"><div class="meta"><a class="reply-name"><span class="username">'+data.user+'</span></a>'
+						item += '<span class="time">'+data.time+'</span></div>'
+						item += '<span class="content"><p>'+ data.comment + '</p></span></div></div>'
+						$('#reply').prepend(item);
+						// alert(data.comment+data.user+data.time+data.id)
+          },
+          error:function(data){
+            alert('error');
+          },
+      })
+		}
+		else{
+			alert('请输入内容');
+		}
+	});
+});
+</script>
 <div class="topic-detail containers-box">
 <div class="ui-header">
 <h3 class="title">{{one['title']}}</h3>
@@ -12,7 +48,7 @@
 </div>
 {% if comments %}
 <div class="topic-reply containers-box mt10">
-<div class="ui-content">
+<div class="ui-content" id="reply">
 {% for i in comments %}
 	{% module Reply(i) %}
 {% end %}
@@ -39,8 +75,9 @@
 <span class="title">创建新的回复</span>
 </div>
 <div class="ui-content">
-<form class="mt10" action method="post">
-<textarea rows="3" class="content mt5 smart-code-support J_replyContent" placeholder="回复内容" name="comment"></textarea>
+<!-- <form class="mt10" action method="post"> -->
+<form class="mt10">
+<textarea rows="3" class="content mt5 smart-code-support J_replyContent" placeholder="回复内容"  id="foo"></textarea>
 
 <input  type="submit" id="checkall" class="btn btn-small" value="立即回复">
 </form>
@@ -50,4 +87,4 @@
 {% end %}
 
 {% block sidebar %}
-{% end %}	
+{% end %}
