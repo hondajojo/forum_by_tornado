@@ -178,8 +178,8 @@ class ArticleHandler(BaseHandler):
         one = self.application.db.get("select * from article where id = %s",id)
         if not one: raise tornado.web.HTTPError(404)
         comments = self.application.db.query('select * from comment where id = %s order by reply_time desc',id)
-        mistake = None
-        self.render('page.html',one = one,comments=comments,mistake = mistake)
+        # mistake = None
+        self.render('page.html',one = one,comments=comments)
         #return id
 
 class CommentHandler(BaseHandler):

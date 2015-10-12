@@ -2,7 +2,7 @@
 {% block main %}
 <script type="text/javascript">
 $(document).ready(function(){
-	$("#checkall").click(function(){
+	$("#replly").click(function(){
 		var a = $("#foo").val();
 		var str = window.location.href
 		// var num = str.indexOf("/")
@@ -22,8 +22,9 @@ $(document).ready(function(){
 						var item = '<div class="reply-item"><div class="main"><div class="meta"><a class="reply-name"><span class="username">'+data.user+'</span></a>'
 						item += '<span class="time">'+data.time+'</span></div>'
 						item += '<span class="content"><p>'+ data.comment + '</p></span></div></div>'
+						$('#foo').val('')
 						$('#reply').prepend(item);
-						// alert(data.comment+data.user+data.time+data.id)
+						// alert(item)
           },
           error:function(data){
             alert('error');
@@ -46,7 +47,7 @@ $(document).ready(function(){
 </div>
 <div class="ui-content"><p>{{one['content']}}</p></div>
 </div>
-{% if comments %}
+
 <div class="topic-reply containers-box mt10">
 <div class="ui-content" id="reply">
 {% for i in comments %}
@@ -54,7 +55,7 @@ $(document).ready(function(){
 {% end %}
 </div>
 </div>
-{% end %}
+
 {% if not current_user %}
 <div class="topic-reply-create containers-box mt10">
 <div class="ui-header">
@@ -69,17 +70,14 @@ $(document).ready(function(){
 
 <div class="topic-reply-create containers-box mt10">
 <div class="ui-header">
-{% if mistake %}
-<span style="color:red">{{mistake}}</span></br>
-{% end %}
 <span class="title">创建新的回复</span>
 </div>
 <div class="ui-content">
 <!-- <form class="mt10" action method="post"> -->
 <form class="mt10">
-<textarea rows="3" class="content mt5 smart-code-support J_replyContent" placeholder="回复内容"  id="foo"></textarea>
+<textarea rows="3" class="content mt5" placeholder="回复内容" id="foo"></textarea>
 
-<input  type="submit" id="checkall" class="btn btn-small" value="立即回复">
+<button id="replly" class="btn btn-small">立即回复</button>
 </form>
 </div>
 </div>

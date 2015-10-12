@@ -69,8 +69,8 @@ $(document).ready(function(){
           dataType: 'json',
           success:function(data){
             var newitem = "<span>"+data.comment+"</span><span>"+data.time+"</span></br>"
-            $('#result').prepend(newitem);
-            // alert(data.comment)
+            // $('#result').prepend(newitem);
+            alert(newitem)
           },
           error:function(data){
             alert('error!');
